@@ -1,6 +1,4 @@
 # WebDev-Projects
-Projects completed under Course - Web Technologies at USC
-
 HTML & CSS assignment: Imitate a web page
 
 JSON assignment: Navigating JavaScript JSON objects
