@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Homework 4
+</title>
+</head>
+<body>
+<form name="myform" >
+<div align="center" style="margin-top: 10%">
+	<h1> Enter URL for Airlines List JSON File </h1>
+		<div style="margin-bottom: 1%">
+		<input type="text" name ="jsonfile" id="jsonfile">
+		</div>
+	
+	<button onclick="validateform()">Submit Query</button>
+	</form>
+</div>
+<script>
+
+
+// Read and validate JSON file using XMLHTTP request
+function validateform(){	
+	
+	jsonfile= document.forms["myform"]["jsonfile"].value;
+	
+	//if filename is null or empty 
+	if(jsonfile == null || jsonfile == ""){
+		alert("Field cannot be empty");	
+		return false;
+
+		}
+	else
+    {
+    		
+		try{
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.open("GET",jsonfile, false);
+		xmlhttp.overrideMimeType("application/json");
+		xmlhttp.send();
+		
+		//store response
+		var data = JSON.parse(xmlhttp.responseText);
+	 	}
+	 	//if JSON invalid or file not exist
+	 	catch(err)
+	 	{
+	 	alert("File could not be loaded");
+	 	}
+
+	 	//if JSON is empty
+		if(Object.keys(data).length === 0 && data.constructor === Object)
+			alert('Json file is empty');
+
+		 else
+		 	data.onload=generateHTML(data);
+	  
+	}
+}
+		
+
+function generateHTML(data){
+		
+		root=data.DocumentElement; 
+		html_text="<html><head><title>JSON Parse Result</title></head><body>";
+		html_text+="<table border='2' width=100%>"; 
+		
+		planes=data.Mainline.Table.Header.Data; 
+		
+
+		//if header length is zero
+		if(Object.keys(planes).length==0)
+		alert('JSON file is empty');
+
+		//if no Row present
+		else if(('Row' in data.Mainline.Table)==false)
+		alert("No Rows exist");
+
+		 
+		
+		else
+		{
+
+		//start table body
+		html_text+="<tbody>"; 
+		html_text+="<tr>"; 
+        
+        // loop for number of columns
+        for(i=0;i<planes.length;i++){ 
+           	header=planes[i];	
+			html_text+="<th>"+header+"</th>";    	
+		}
+		html_text+="</tr>"; 
+
+		//check single empty row
+		  if(data.Mainline.Table.Row.length==undefined)
+		 	{
+			 	html_text+="<tr height=20px>";
+		 		for(n=0;n<data.Mainline.Table.Header.Data.length;n++)		
+			     html_text+="<td>"+""+"</td>";
+				html_text+="</tr>";
+			 }
+
+		//loop for row data
+        for(i=0;i<data.Mainline.Table.Row.length;i++){ 
+        	planeNodeList=data.Mainline.Table.Row[i]; 
+		    html_text+="<tr>";     
+		
+          	var trialRows = "";
+		   
+			       	//loop for list items
+			       	if(data.Mainline.Table.Row[i].Hubs.Hub==undefined)
+			       		triakRows="";
+			       	else
+			       	{	trialRows+="<ul>";	
+				       	for(k=0;k<data.Mainline.Table.Row[i].Hubs.Hub.length;k++)			
+				       	{
+				      	 	trial = data.Mainline.Table.Row[i].Hubs.Hub[k];  
+				      	 	
+				      	 	if(k==0)	
+					      	 	{
+					      	 	trialRows+="<li><b>" + trial + "</b></li>";
+					      	 	}   
+					      	else			
+				      		trialRows+="<li>" + trial + "</li>";
+				      	
+				      	}
+				      	trialRows+="</ul>";
+			      	}
+
+               html_text+="<td>"+ planeNodeList.Airline + "</td>";
+               html_text+="<td>"+ planeNodeList.IATA + "</td>";
+               html_text += "<td>" + trialRows + "</td>";
+               html_text+="<td>"+ planeNodeList.Notes + "</td>";
+               html_text+="<td><a href='"+ planeNodeList.HomePage +"'>"+planeNodeList.HomePage+"</a></td>";
+               if(planeNodeList.Plane.length<=1)
+               	html_text+="<td> </td>";
+               else
+               html_text+="<td>" + "<img src='"+ planeNodeList.Plane +"' width='200px' height='100px' alt=' '>" + "</td>";
+
+				html_text+="</tr>";            
+		}       
+		                 
+		html_text+="</tbody>"; 
+		html_text+="</table>";           
+		html_text+="</body></html>"; 
+		   
+		//open in a new window
+		hWin = window.open("", jsonfile , "height=800,width=1000");             		
+			     hWin.document.write(html_text); 
+			     hWin.document.close();
+		}
+}
+</script>
+<NOSCRIPT>
+</body>
+</html>
